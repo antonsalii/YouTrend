@@ -1,0 +1,21 @@
+{% extends "index.html" %}
+{% block content %}
+  {% for el in results %}
+  <div class="flex-container">
+
+    <div class="flex-child left">
+      <img src={{el.thumbnail_url}}>
+    </div>
+
+    <div class="flex-child right">
+      <h3 class="title"><a href={{el.video_url}} style="color:#000000; text-decoration:none" >{{el.title}}</a></h3>
+      <p>Views: {{el.view_count}}</p>
+      <p>Channel subscribers: {{el.subscriber_count}}</p>
+      <p>Trending rate: {{el.percentage_delta}}%</p>
+      <p>Published: {{el.time_ago}}</p>
+    </div>
+    <br>
+
+  </div>
+  {% endfor %}
+{% endblock %}
