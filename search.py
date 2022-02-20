@@ -8,7 +8,7 @@ from utils import human_format
 class YouTubeSearch:
     def __init__(self, payload):
         self.base_video_url = 'https://www.youtube.com/watch?v='
-        self.number_of_videos_to_analyse = 50
+        self.number_of_videos_to_analyse = 250
         self.youtube = apc.build('youtube', 'v3', developerKey=api_key)
         self.payload = payload
 
@@ -17,7 +17,6 @@ class YouTubeSearch:
         for i in range(int(self.number_of_videos_to_analyse / 50)):
             if i != 0:
                 if not res.get('nextPageToken'):
-                    print(f'total videos analysed: {i * 50}')
                     break
                 self.payload['pageToken'] = res['nextPageToken']
 
@@ -58,13 +57,20 @@ class YouTubeSearch:
         }
 
         for item in all_items:
-            view_count = int(views[item['video_id']] or 0)
-            if view_count == 0:
-                view_count = 1
+            # we are dividing by view_count when calculating percentage_delta
+            # we can not divide by zero
+            view_count = int(views[item['video_id']] or 1)
 
-            subscriber_count = int(channels_info[item['channel_id']]['subs_count'] or 1000000000)
+            # sometimes for some reasons channel is not available
+            # so there is no channel with such channel id in channels_info
+            # subscriber_count = 1000000000 => video will appear in the end of the list
+            try:
+                subscriber_count = int(channels_info[item['channel_id']]['subs_count'] or 1000000000)
+                item['channel_thumbnail_url'] = channels_info[item['channel_id']]['thumbnail_url']
+            except KeyError:
+                subscriber_count = 1000000000
+                item['channel_thumbnail_url'] = None
 
-            item['channel_thumbnail_url'] = channels_info[item['channel_id']]['thumbnail_url']
             item['video_url'] = self.base_video_url + item['video_id']
             item['time_ago'] = timeago.format(
                 datetime.datetime.strptime(item['published_at'], '%Y-%m-%dT%H:%M:%SZ'),
@@ -75,7 +81,7 @@ class YouTubeSearch:
             item['subscriber_count'] = human_format(subscriber_count)
             item['percentage_delta'] = round((subscriber_count - view_count) / view_count * 100, 2) * -1
 
-        return sorted(all_items, key=lambda k: k['percentage_delta'], reverse=True)
+        return sorted(all_items, key=lambda k: k['percentage_delta'], reverse=True)[:50]
 
     def get_videos_from_search(self):
         pass
