@@ -59,7 +59,7 @@ class YouTubeSearch:
         for item in all_items:
             # we are dividing by view_count when calculating percentage_delta
             # we can not divide by zero
-            view_count = int(views[item['video_id']] or 1)
+            view_count = int(views[item['video_id']] or 0) or 1
 
             # sometimes for some reasons channel is not available
             # so there is no channel with such channel id in channels_info

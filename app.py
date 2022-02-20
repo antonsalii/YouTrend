@@ -16,7 +16,10 @@ CORS(app)
 def index():
     search = SearchForm(request.form)
     if request.method == 'POST':
-        return search_results(search)
+        try:
+            return search_results(search)
+        except Exception:
+            return render_template('error.html')
     return render_template('index.html', form=search)
 
 
